@@ -31,11 +31,37 @@ def main():
 
         return train
 
+    def tenths(train, letters):
+        col = train['protein_sequence']
+        length = len(col)
+        tenths = [int((length/10)*(x+1)) for x in range(10)]
+        tenth_list = []
+        for idx, ten in enumerate(tenths):
+            col_tenth = col[idx:ten]
+            col_dict = {}
+            for letter in col_tenth:
+                if letter in col_dict:
+                    col_dict[letter] += 1
+                else:
+                    col_dict[letter] = 1
+            for letter in letters:
+                if letter not in col_dict:
+                    col_dict[letter] = 0
+            for key, value in col_dict.items():
+                col_dict[key] = value/(length/10)
+            tenth_list.append(col_dict)
+        labels = np.arange(0, 110, 10)
+        for idx, t in enumerate(tenth_list):
+            for l in letters:
+                train[f'{labels[idx]}-{labels[idx+1]}{l}_count'] = t[l]
+        return train
+        
+    df = df.apply(partial(tenths, letters=letters), axis=1)
     df = match_columns(wild_type, df)
 
     df['seq_len'] = df['protein_sequence'].str.len()
-	df['seq_len'] = df['seq_len']/df['seq_len'].max()
-	df['rel_stab'] = df['tm']/df['tm'].max()
+    df['seq_len'] = df['seq_len']/df['seq_len'].max()
+    df['rel_stab'] = df['tm']/df['tm'].max()
 
 if __name__ == '__main__':
     main()
