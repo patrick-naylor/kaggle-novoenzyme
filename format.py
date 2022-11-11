@@ -32,8 +32,10 @@ def main():
         return train
 
     df = match_columns(wild_type, df)
-    print(df)
 
+    df['seq_len'] = df['protein_sequence'].str.len()
+	df['seq_len'] = df['seq_len']/df['seq_len'].max()
+	df['rel_stab'] = df['tm']/df['tm'].max()
 
 if __name__ == '__main__':
     main()
