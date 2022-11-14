@@ -140,6 +140,8 @@ def main():
 
 
     removals = [
+        "seq_len_norm",
+        "seq_len",
         "seq_id",
         "protein_sequence",
         "pH",
@@ -159,7 +161,7 @@ def main():
     ]
     df = df.drop(removals, axis=1)
 
-    df.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/test_1.csv")
+    df.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/test_2.csv")
 
 
 if __name__ == "__main__":
