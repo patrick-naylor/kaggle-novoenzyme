@@ -5,12 +5,8 @@ def main():
     from difflib import SequenceMatcher
     from functools import partial
 
-    df = pd.read_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/train.csv")
-    corr = pd.read_csv(
-        "/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/train_updates_20220929.csv"
-    )
-    corr_ids = list(corr["seq_id"])
-    df = df[~df["seq_id"].isin(corr_ids)]
+    df = pd.read_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/test.csv")
+
 
     wild_type = "VPVNPEPDATSVENVALKTGSGDSQSDPIKADLEVKGQSALPFDVDCWAILCKGAPNVLQRVNEKTKNSNRDRSGANKGPFKDPQKWGIKALPPKNPSWSAQDFKSPEEYAFASSLQGGTNAILAPVNLASQNSQGGVLNGFYSANKVAQFDPSKPQQTKGTWFQITKFTGAAGPYCKALGSNDKSVCDKNKNIAGDWGFDPAKWAYQYDEKNNKFNYVGK"
     print(df.head())
@@ -75,7 +71,7 @@ def main():
     def tenths_letters(train, letters):
         col = train["protein_sequence"]
         length = len(col)
-        tenths = [int((length / 10) * (x + 1)) for x in range(10)]
+        tenths = [int((length / 25) * (x + 1)) for x in range(25)]
         tenth_list = []
         for idx, ten in enumerate(tenths):
             col_tenth = col[idx:ten]
@@ -89,9 +85,9 @@ def main():
                 if letter not in col_dict:
                     col_dict[letter] = 0
             for key, value in col_dict.items():
-                col_dict[key] = value / (length / 10)
+                col_dict[key] = value / (length / 25)
             tenth_list.append(col_dict)
-        labels = np.arange(0, 110, 10)
+        labels = np.arange(0, 104, 4)
         for idx, (t, w) in enumerate(zip(tenth_list, wild_list)):
             for l in letters:
                 train[f"{labels[idx]}-{labels[idx+1]}{l}_count"] = t[l] - w[l]
@@ -100,11 +96,11 @@ def main():
     df["seq_len"] = df["protein_sequence"].str.len()
     df["seq_len_norm"] = df["seq_len"] / df["seq_len"].max()
 
-    df["len_tenth"] = df["seq_len"] // 10
-    wild_tenth = len(wild_type) // 10
+    df["len_tenth"] = df["seq_len"] // 25
+    wild_tenth = len(wild_type) // 25
     wild_tenths = []
     tenth_labels = []
-    labels = np.arange(0, 10)
+    labels = np.arange(0, 25)
     for label in labels:
         df[f"{label}_tenth_str"] = df.apply(
             partial(tenth_strings, c="protein_sequence", num=label, tenth="len_tenth"),
@@ -120,7 +116,7 @@ def main():
 
     col = wild_type
     length = len(col)
-    tenths = [int((length / 10) * (x + 1)) for x in range(10)]
+    tenths = [int((length / 25) * (x + 1)) for x in range(25)]
     wild_list = []
     for idx, ten in enumerate(tenths):
         col_tenth = col[idx:ten]
@@ -134,23 +130,20 @@ def main():
             if letter not in col_dict:
                 col_dict[letter] = 0
         for key, value in col_dict.items():
-            col_dict[key] = value / (length / 10)
+            col_dict[key] = value / (length / 25)
         wild_list.append(col_dict)
 
     df = df.apply(partial(tenths_letters, letters=letters), axis=1)
 
     df = match_columns(wild_type, df)
 
-    df["rel_stab"] = df["tm"] / df["tm"].max()
 
-    rel_stab = df["rel_stab"]
 
     removals = [
         "seq_id",
         "protein_sequence",
         "pH",
         "data_source",
-        "tm",
         "seq_len",
         "len_tenth",
         "0_tenth_str",
@@ -163,12 +156,10 @@ def main():
         "7_tenth_str",
         "8_tenth_str",
         "9_tenth_str",
-        "rel_stab",
     ]
     df = df.drop(removals, axis=1)
 
-    df.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/variables_1.csv")
-    rel_stab.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/target.csv")
+    df.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/test_1.csv")
 
 
 if __name__ == "__main__":
