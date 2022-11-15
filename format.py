@@ -90,7 +90,10 @@ def main():
         labels = np.arange(0, 104, 4)
         for idx, (t, w) in enumerate(zip(tenth_list, wild_list)):
             for l in letters:
-                train[f"{labels[idx]}-{labels[idx+1]}{l}_count"] = t[l] - w[l]
+                if (w[l] != 0) and (t[l] != 0):
+                    train[f'{labels[idx]}-{labels[idx+1]}{l}_count'] = (t[l] - w[l])/(w[l] + t[l])
+                else: 
+                    train[f'{labels[idx]}-{labels[idx+1]}{l}_count'] = 0
         return train
 
     df["seq_len"] = df["protein_sequence"].str.len()
@@ -148,19 +151,12 @@ def main():
         "data_source",
         "seq_len",
         "len_tenth",
-        "0_tenth_str",
-        "1_tenth_str",
-        "2_tenth_str",
-        "3_tenth_str",
-        "4_tenth_str",
-        "5_tenth_str",
-        "6_tenth_str",
-        "7_tenth_str",
-        "8_tenth_str",
-        "9_tenth_str",
     ]
     df = df.drop(removals, axis=1)
-
+    columns = df.columns
+    for col in columns:
+        if col[-3:] == 'str':
+            removals.append(col)
     df.to_csv("/Users/patricknaylor/Desktop/kaggle/kaggle-NOVO/data/test_2.csv")
 
 
